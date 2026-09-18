@@ -1,0 +1,22 @@
+name: consumer
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  consume:
+    runs-on: ubuntu-latest
+    steps:
+      - name: restore the shared-key cache
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: cachedir
+          key: ci-cache-lab-shared-key-v1
+      - name: inspect what was restored (privileged base-branch run)
+        run: |
+          echo "event=$GITHUB_EVENT_NAME ref=$GITHUB_REF"
+          echo "cache-hit=${{ steps.restore.outputs.cache-hit }}"
+          echo "--- cachedir ---"; ls -la cachedir 2>/dev/null || echo "(no cachedir)"
+          echo "--- marker ---"; cat cachedir/marker.txt 2>/dev/null || echo "(no marker)"

