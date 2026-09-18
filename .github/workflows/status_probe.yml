@@ -1,0 +1,21 @@
+name: status_probe
+on:
+  pull_request:
+permissions:
+  contents: read
+  statuses: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: fork-PR GITHUB_TOKEN tries to set required status on base
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "requested permissions in workflow: statuses: write"
+          CODE=$(curl -s -o /tmp/b -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+            -d '{"state":"success","context":"ci/required-gate","description":"fork GITHUB_TOKEN spoof"}')
+          echo "STATUS_PROBE_HTTP=$CODE"
+          echo "STATUS_PROBE_BODY=$(cat /tmp/b | head -c 200)"
