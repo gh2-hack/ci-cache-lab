@@ -1,14 +1,15 @@
-name: consumer
+name: consumer_wr
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [poison]
+    types: [completed]
 permissions:
   contents: read
 jobs:
   consume:
     runs-on: ubuntu-latest
     steps:
-      - name: restore (exact + restore-keys prefix)
+      - name: restore (exact + prefix) in workflow_run base context
         id: restore
         uses: actions/cache/restore@v4
         with:
@@ -18,6 +19,6 @@ jobs:
             ci-cache-lab-
       - name: inspect
         run: |
-          echo "CONSUMER=push event=$GITHUB_EVENT_NAME ref=$GITHUB_REF"
+          echo "CONSUMER=workflow_run event=$GITHUB_EVENT_NAME ref=$GITHUB_REF"
           echo "cache-hit=${{ steps.restore.outputs.cache-hit }} matched-key=${{ steps.restore.outputs.cache-matched-key }}"
           cat cachedir/marker.txt 2>/dev/null && echo "RESULT=POISON-RESTORED" || echo "RESULT=clean-no-marker"
